@@ -1,0 +1,3 @@
+[submodule "stubs"]
+	path = stubs
+	url = git@github.com:mupimenov/lvgl_micropython_esp32s3_stubs.git
