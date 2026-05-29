@@ -1,0 +1,7 @@
+{
+    "name": "Calibrate touch",
+    "version": "1.0.0",
+    "entry_point": "main.py", 
+    "class_name": "CalibTouchApp",
+    "hidden": true
+}

@@ -1,0 +1,2 @@
+[tool.ty.environment]
+extra-paths = ["./stubs/micropython", "./stubs/lvgl_micropython", "./stubs/lvgl"]

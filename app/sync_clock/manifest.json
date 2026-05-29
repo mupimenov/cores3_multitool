@@ -1,0 +1,6 @@
+{
+    "name": "Synchronize clock",
+    "version": "1.0.0",
+    "entry_point": "main.py", 
+    "class_name": "SyncClockApp"
+}
