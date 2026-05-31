@@ -3,12 +3,12 @@ from micropython import const
 
 import lvgl as lv
 
-import task_handler
-
 from core.hw import DISPLAY_WIDTH, get_pmic
 from core.app_manager import AppManager
 
 import lib.xtime
+
+import uasyncio as asyncio
 
 STATUSBAR_HEIGHT = const(30)
 VIEWPORT_WIDTH = const(320)
@@ -116,7 +116,7 @@ class StatusBar:
         self.time_label.set_text(s)
 
 
-def init():
+async def run():
     global app_manager
     global status_bar
     global home
@@ -127,7 +127,11 @@ def init():
     home = Home(app_manager)
     status_bar = StatusBar(app_manager, home)
 
-    th = task_handler.TaskHandler()
-
+    start_time = time.ticks_ms()  # ty:ignore[unresolved-attribute]
     while True:
-        time.sleep(0.033)
+        stop_time = time.ticks_ms()  # ty:ignore[unresolved-attribute]
+        ticks_diff = time.ticks_diff(stop_time, start_time)  # ty:ignore[unresolved-attribute]
+        start_time = stop_time
+        lv.tick_inc(ticks_diff)
+        lv.task_handler()
+        await asyncio.sleep_ms(20)

@@ -4,6 +4,8 @@ import network
 import lcd_bus
 import time
 import ntptime
+import uasyncio as asyncio
+import _thread
 
 import i2c
 import ft6x36
@@ -98,13 +100,13 @@ def pmicPrintInfo(axp2101: drv.axp2101.AXP2101):
     print("DLDO2 voltage:", axp2101.getDLDO2Voltage())
 
 
-def connect_wifi(timeout: int = 10) -> bool:
+async def connect_wifi(timeout: int = 10) -> bool:
     global wlan
 
     if wlan and not wlan.isconnected():
         wlan.connect(_WIFI_SSID, _WIFI_PASSWD)
         while not wlan.isconnected() and timeout > 0:
-            time.sleep(1)
+            await asyncio.sleep(1)
             timeout -= 1
 
     if wlan and wlan.isconnected():
@@ -112,21 +114,37 @@ def connect_wifi(timeout: int = 10) -> bool:
     return False
 
 
-def sync_time(timeout: int = 2) -> bool:
-    global rtc
-    global ext_rtc
+async def sync_time(timeout: int = 2) -> bool:
     global wlan
 
-    if wlan and wlan.isconnected():
+    flag = asyncio.ThreadSafeFlag()
+    result = None
+
+    def _sync_time() -> None:
+        global rtc
+        global ext_rtc
+        nonlocal flag
+        nonlocal result
+
         try:
             ntptime.timeout = timeout
             t = ntptime.time()
             tm = time.gmtime(t)
             rtc.datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))  # ty:ignore[unresolved-attribute]
             ext_rtc.datetime((tm[0], tm[1], tm[2], tm[3], tm[4], tm[5], tm[6]))  # ty:ignore[unresolved-attribute]
-            return True
+            result = True
+            flag.set()
+            return
         except Exception:
             pass
+
+        result = False
+        flag.set()
+
+    if wlan and wlan.isconnected():
+        _thread.start_new_thread(_sync_time, ())
+        await flag.wait()  # ty:ignore[invalid-await]
+        return bool(result)
     return False
 
 

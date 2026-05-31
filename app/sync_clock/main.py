@@ -1,3 +1,5 @@
+import uasyncio as asyncio
+
 import lvgl as lv
 
 from core.hw import connect_wifi, sync_time
@@ -41,15 +43,15 @@ class SyncClockApp(BasicApp):
         self.sync_btn_txt = lv.label(self.sync_btn)
         self.sync_btn_txt.set_text("Sync clock")
 
-        def sync_clock(e):
+        async def sync_clock(e):
             self.sync_btn.add_state(lv.STATE.DISABLED)
             self.sync_btn_txt.set_text("Connecting...")
-            if not connect_wifi():
+            if not await connect_wifi():
                 self.sync_btn_txt.set_text("Not connected")
                 self.sync_btn.remove_state(lv.STATE.DISABLED)
                 return
             self.sync_btn_txt.set_text("Synchronizing...")
-            if not sync_time():
+            if not await sync_time():
                 self.sync_btn_txt.set_text("Failed")
                 self.sync_btn.remove_state(lv.STATE.DISABLED)
                 return
@@ -59,7 +61,11 @@ class SyncClockApp(BasicApp):
             )
             self.sync_btn.remove_state(lv.STATE.DISABLED)
 
-        self.sync_btn.add_event_cb(sync_clock, lv.EVENT.CLICKED, None)  # ty:ignore[invalid-argument-type]
+        self.sync_btn.add_event_cb(
+            lambda e: asyncio.create_task(sync_clock(e)),
+            lv.EVENT.CLICKED,
+            None,  # ty:ignore[invalid-argument-type]
+        )
 
         lv.timer_create(
             lambda tobj: self.curr_lbl.set_text(
