@@ -1,4 +1,5 @@
 import gc
+import uos
 
 import lvgl as lv
 
@@ -32,6 +33,10 @@ class MemManagerApp(BasicApp):
         self.free_lbl.set_long_mode(lv.label.LONG_MODE.WRAP)
         self.free_lbl.set_width(lv.pct(90))
 
+        self.fs_lbl = lv.label(stack)
+        self.fs_lbl.set_long_mode(lv.label.LONG_MODE.WRAP)
+        self.fs_lbl.set_width(lv.pct(90))
+
         self.collect_btn = lv.button(stack)
         self.collect_btn_txt = lv.label(self.collect_btn)
         self.collect_btn_txt.set_text("Collect")
@@ -53,6 +58,9 @@ class MemManagerApp(BasicApp):
             f"Allocated: {gc.mem_alloc() / 1024: .1f} KB"  # ty:ignore[unresolved-attribute]
         )
         self.free_lbl.set_text(f"Free: {gc.mem_free() / 1024: .1f} KB")  # ty:ignore[unresolved-attribute]
+        fs_stats = uos.statvfs("/")
+        free_fs_space = fs_stats[0] * fs_stats[3]
+        self.fs_lbl.set_text(f"FS free: {free_fs_space / 1024: .1f} KB")
 
     def show(self):
         if self.screen:
