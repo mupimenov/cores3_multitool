@@ -4,6 +4,7 @@ import network
 import lcd_bus
 import time
 import ntptime
+import json
 import uasyncio as asyncio
 import _thread
 
@@ -29,9 +30,6 @@ _CS_PIN = const(3)
 
 _DC_PIN = const(35)  # same as MISO
 _FREQ = const(40000000)
-
-_WIFI_SSID = const("CU_cYp2")
-_WIFI_PASSWD = const("2gc7n2m7")
 
 DISPLAY_WIDTH = const(320)
 DISPLAY_HEIGHT = const(240)
@@ -100,11 +98,24 @@ def pmicPrintInfo(axp2101: drv.axp2101.AXP2101):
     print("DLDO2 voltage:", axp2101.getDLDO2Voltage())
 
 
+def wifi_credentials() -> tuple[str, str]:
+    try:
+        with open("/config/wifi.json", "r") as f:
+            cfg = json.load(f)
+            return cfg["ssid"], cfg["password"]
+    except Exception:
+        pass
+    return "", ""
+
+
 async def connect_wifi(timeout: int = 10) -> bool:
     global wlan
 
     if wlan and not wlan.isconnected():
-        wlan.connect(_WIFI_SSID, _WIFI_PASSWD)
+        ssid, password = wifi_credentials()
+        if not ssid or not password:
+            return False
+        wlan.connect(ssid, password)
         while not wlan.isconnected() and timeout > 0:
             await asyncio.sleep(1)
             timeout -= 1
