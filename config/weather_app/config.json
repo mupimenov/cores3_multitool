@@ -1,0 +1,30 @@
+{
+    "forecast_days": 3,
+    "cities": [
+        {
+            "name": "Beijing",
+            "latitude": 39.9075,
+            "longitude": 116.39723
+        },
+        {
+            "name": "Moscow",
+            "latitude": 55.75204,
+            "longitude": 37.61781
+        },
+        {
+            "name": "Balakovo",
+            "latitude": 52.02639,
+            "longitude": 47.79671
+        },
+        {
+            "name": "Chongqing",
+            "latitude": 29.56026,
+            "longitude": 106.55771
+        },
+        {
+            "name": "Liangping",
+            "latitude": 30.66108,
+            "longitude": 107.7661
+        }
+    ]
+}
